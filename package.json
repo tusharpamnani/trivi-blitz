@@ -1,0 +1,49 @@
+{
+  "name": "trivia-blitz",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:base": "hardhat run scripts/deploy.js --network base",
+    "deploy:base-testnet": "hardhat run scripts/deploy.js --network base-testnet",
+    "verify:base": "hardhat verify --network base",
+    "verify:base-testnet": "hardhat verify --network base-testnet"
+  },
+  "dependencies": {
+    "@coinbase/onchainkit": "^0.38.17",
+    "@coinbase/wallet-sdk": "^4.3.6",
+    "@farcaster/core": "^0.18.4",
+    "@farcaster/miniapp-sdk": "^0.1.7",
+    "@farcaster/miniapp-wagmi-connector": "^1.0.0",
+    "@tanstack/react-query": "^5.83.0",
+    "ethers": "^6.15.0",
+    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
+    "next": "15.4.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "viem": "^2.31.7",
+    "wagmi": "^2.15.6"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "chai": "^4.3.7",
+    "dotenv": "^16.3.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.1",
+    "hardhat": "^2.26.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
