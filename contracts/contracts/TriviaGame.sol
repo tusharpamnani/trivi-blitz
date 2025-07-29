@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -69,7 +69,7 @@ contract TriviaGame is Ownable, ReentrancyGuard {
 
     uint256 public currentRoundId;
 
-    constructor(address _triviaToken) {
+    constructor(address _triviaToken) Ownable(msg.sender) {
         triviaToken = IERC20(_triviaToken);
     }
 
@@ -159,14 +159,14 @@ contract TriviaGame is Ownable, ReentrancyGuard {
         );
 
         // Check correctness
-        bool isCorrect = keccak256(abi.encodePacked(answer)) ==
+        bool answerIsCorrect = keccak256(abi.encodePacked(answer)) ==
             keccak256(abi.encodePacked(rounds[roundId].correctAnswer));
 
         playerAnswers[roundId][msg.sender].hasRevealed = true;
-        playerAnswers[roundId][msg.sender].isCorrect = isCorrect;
+        playerAnswers[roundId][msg.sender].isCorrect = answerIsCorrect;
 
         // Update scores and streaks
-        if (isCorrect) {
+        if (answerIsCorrect) {
             playerScores[msg.sender]++;
             playerStreaks[msg.sender]++;
         } else {
@@ -175,7 +175,7 @@ contract TriviaGame is Ownable, ReentrancyGuard {
 
         lastPlayedRound[msg.sender] = roundId;
 
-        emit AnswerRevealed(msg.sender, roundId, answer, isCorrect);
+        emit AnswerRevealed(msg.sender, roundId, answer, answerIsCorrect);
         emit ScoreUpdated(
             msg.sender,
             playerScores[msg.sender],
@@ -248,7 +248,12 @@ contract TriviaGame is Ownable, ReentrancyGuard {
     /**
      * @dev Get round information
      * @param roundId Round ID
-     * @return Round information
+     * @return startTime Start time of the round
+     * @return endTime End time of the round
+     * @return question The trivia question
+     * @return correctAnswer The correct answer
+     * @return isActive Whether the round is active
+     * @return totalPlayers Number of players who participated
      */
     function getRoundInfo(
         uint256 roundId
@@ -307,7 +312,7 @@ contract TriviaGame is Ownable, ReentrancyGuard {
      * @param roundId Round ID
      * @return True if correct
      */
-    function isCorrect(
+    function isAnswerCorrect(
         address player,
         uint256 roundId
     ) external view returns (bool) {

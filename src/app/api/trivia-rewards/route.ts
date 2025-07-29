@@ -1,27 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
-
-// TriviaGame ABI - you should replace this with the full ABI from your compiled contract
-const triviaGameABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "player", type: "address" },
-      { internalType: "uint256", name: "roundId", type: "uint256" },
-      { internalType: "bool", name: "isCorrect", type: "bool" },
-    ],
-    name: "awardTriviaReward",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "owner",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-];
+import triviaGameABI from "@/abis/TriviaGame.json";
 
 const TRIVIA_GAME_ADDRESS = "0x0000000000000000000000000000000000000000"; // Placeholder
 const BASE_RPC_URL = "https://mainnet.base.org";

@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useAccount, useWriteContract, useReadContract } from "wagmi";
-import { toPng } from "html-to-image";
+import {
+  useAccount,
+  useWriteContract,
+  useReadContract,
+  useConnect,
+} from "wagmi";
 import { sdk } from "@farcaster/frame-sdk";
 import { ethers } from "ethers";
 import triviaGameABI from "@/abis/TriviaGame.json";
+import { useRouter } from "next/navigation";
 
 // Toast notification component
 const Toast = ({
@@ -91,9 +96,9 @@ const MOCK_QUESTIONS = [
 ];
 
 const TRIVIA_GAME_ADDRESS =
-  "0x0000000000000000000000000000000000000000" as `0x${string}`; // Placeholder
+  "0xf979833F1C343a894A54861E971ebDD4e7dA7d2c" as `0x${string}`; // Placeholder
 const TRIVIA_TOKEN_ADDRESS =
-  "0x0000000000000000000000000000000000000000" as `0x${string}`; // Placeholder
+  "0x0de0C9880f32F20F09EFb126E0d36A94f70572B0" as `0x${string}`; // Placeholder
 
 interface GameState {
   currentQuestion: (typeof MOCK_QUESTIONS)[0] | null;
@@ -118,6 +123,7 @@ interface LeaderboardEntry {
 export default function TriviaGame() {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
+  const { connect, connectors, isPending } = useConnect();
 
   // Game state
   const [gameState, setGameState] = useState<GameState>({
@@ -146,7 +152,7 @@ export default function TriviaGame() {
 
   // Generate a random salt for commit-reveal
   const generateSalt = () => {
-    return ethers.randomBytes(32).toString("hex");
+    return ethers.randomBytes(32).toString();
   };
 
   // Hash the answer with salt
@@ -156,10 +162,10 @@ export default function TriviaGame() {
 
   // Start a new round
   const startNewRound = useCallback(async () => {
-    if (!address) {
-      showToast("Please connect your wallet to play!", "error");
-      return;
-    }
+    // if (!address) {
+    //   showToast("Please connect your wallet to play!", "error");
+    //   return;
+    // }
 
     const randomQuestion =
       MOCK_QUESTIONS[Math.floor(Math.random() * MOCK_QUESTIONS.length)];
@@ -188,7 +194,11 @@ export default function TriviaGame() {
         address: TRIVIA_GAME_ADDRESS,
         abi: triviaGameABI as any,
         functionName: "startNewRound",
-        args: [newRoundId],
+        args: [
+          newRoundId,
+          randomQuestion.question,
+          randomQuestion.correctAnswer,
+        ],
       });
     } catch (error) {
       console.log("Smart contract not available, using mock mode");
@@ -210,7 +220,7 @@ export default function TriviaGame() {
         address: TRIVIA_GAME_ADDRESS,
         abi: triviaGameABI as any,
         functionName: "commitAnswer",
-        args: [answerHash],
+        args: [gameState.roundId, answerHash],
       });
 
       setGameState((prev) => ({ ...prev, hasCommitted: true }));
@@ -244,7 +254,7 @@ export default function TriviaGame() {
         address: TRIVIA_GAME_ADDRESS,
         abi: triviaGameABI as any,
         functionName: "revealAnswer",
-        args: [gameState.playerAnswer, gameState.playerSalt],
+        args: [gameState.roundId, gameState.playerAnswer, gameState.playerSalt],
       });
 
       setGameState((prev) => ({
@@ -556,6 +566,8 @@ export default function TriviaGame() {
     return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
+  const router = useRouter();
+
   return (
     <div className="flex flex-col items-center gap-4 p-4 bg-white rounded-lg shadow-lg max-w-md mx-auto">
       {/* Toast notifications */}
@@ -571,7 +583,21 @@ export default function TriviaGame() {
               Connected: {address.slice(0, 6)}...{address.slice(-4)}
             </>
           ) : (
-            "Connect wallet to play!"
+            <>
+              Connect wallet to play!
+              <div className="mt-2">
+                {connectors.map((connector) => (
+                  <button
+                    key={connector.uid}
+                    onClick={() => connect({ connector })}
+                    disabled={isPending}
+                    className="bg-coinbase-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 disabled:bg-gray-400"
+                  >
+                    {isPending ? "Connecting..." : `Connect ${connector.name}`}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </p>
       </div>

@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { MiniKitProvider as Provider } from '@coinbase/onchainkit/minikit';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { config } from '../lib/wagmi-config';
-import { base } from 'wagmi/chains';
-import { useState, useEffect, ReactNode } from 'react';
+import { PrivyProvider } from "@privy-io/react-auth";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { base } from "wagmi/chains";
+import { http } from "wagmi";
+import { ReactNode, useState, useEffect } from "react";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
+const queryClient = new QueryClient();
+
+const wagmiConfig = createConfig({
+  chains: [base],
+  transports: {
+    [base.id]: http(),
   },
 });
 
@@ -25,48 +25,45 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Add initialization timeout to prevent hanging
     const initTimeout = setTimeout(() => {
       if (!isInitialized) {
-        console.warn('⚠️ Provider initialization taking longer than expected, continuing anyway...');
         setIsInitialized(true);
       }
-    }, 5000); // 5 second timeout
-
+    }, 5000);
     try {
-      // Initialize providers
       setIsInitialized(true);
       clearTimeout(initTimeout);
     } catch (err: any) {
-      console.error('❌ Provider initialization failed:', err);
       setError(err.message);
-      setIsInitialized(true); // Continue anyway
+      setIsInitialized(true);
       clearTimeout(initTimeout);
     }
-
     return () => clearTimeout(initTimeout);
-  }, []);
+  }, [isInitialized]);
 
   if (!isInitialized) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white text-coinbase-blue">
         <div className="text-xl font-bold mb-4">Loading Based Bingo...</div>
-        <div className="text-sm text-gray-600">Initializing wallet connections...</div>
+        <div className="text-sm text-gray-600">
+          Initializing wallet connections...
+        </div>
       </div>
     );
   }
 
   if (error) {
-    console.error('❌ Provider error, but continuing with limited functionality:', error);
+    console.error(
+      "❌ Provider error, but continuing with limited functionality:",
+      error
+    );
   }
 
   return (
-    <Provider chain={base}>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </WagmiProvider>
-    </Provider>
+    <PrivyProvider appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}>
+      <QueryClientProvider client={queryClient}>
+        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+      </QueryClientProvider>
+    </PrivyProvider>
   );
-} 
+}
