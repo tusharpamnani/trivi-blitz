@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function SharePage() {
+function SharePageContent() {
   const searchParams = useSearchParams();
   const shareText = encodeURIComponent(
     searchParams.get("text") || "Just won at Based Blitz! Play now:"
@@ -21,17 +21,32 @@ export default function SharePage() {
     <div className="min-h-screen flex items-center justify-center bg-coinbase-blue text-white">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Sharing Based Blitz...</h1>
-        <p className="text-lg">Redirecting to Warpcast...</p>
-        <div className="mt-4">
-          <a
-            href={warpcastUrl}
-            className="bg-white text-coinbase-blue px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
-            aria-label="Share on Warpcast"
-          >
-            Click here if not redirected
-          </a>
-        </div>
+        <p className="text-lg mb-4">Redirecting to Warpcast...</p>
+        <a
+          href={warpcastUrl}
+          className="text-blue-200 hover:text-white underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Click here if you're not redirected automatically
+        </a>
       </div>
     </div>
+  );
+}
+
+export default function SharePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-coinbase-blue text-white">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+          </div>
+        </div>
+      }
+    >
+      <SharePageContent />
+    </Suspense>
   );
 }
