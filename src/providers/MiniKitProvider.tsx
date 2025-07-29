@@ -1,6 +1,5 @@
 "use client";
 
-import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { base } from "wagmi/chains";
@@ -60,10 +59,8 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
   }
 
   return (
-    <PrivyProvider appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}>
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
       </QueryClientProvider>
-    </PrivyProvider>
   );
 }
